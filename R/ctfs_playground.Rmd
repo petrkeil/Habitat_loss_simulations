@@ -1,0 +1,149 @@
+---
+title: "Barro Colorado CTFS plot -- spatial patterns of range size"
+author: "Petr Keil"
+date: "December 9, 2015"
+output: 
+  html_document: 
+    highlight: tango
+    theme: cerulean
+---
+
+Here I calculate distribution of range sizes in the BCI plot, and also various
+cell-specific summaries of range sizes of species that are present in the cell.
+
+The whole thing is done for David Storch's project on critical role of domain
+boundaries in shaping range size distributions and spatial patterns of range 
+sizes.
+
+Note: **By `range size` I mean number of occupied grid cells in the CTFS plot.**
+
+# Loading the necessary R libraries
+
+```{r, message=FALSE}
+  library(raster)
+  library(sp)
+  library(maptools)
+  library(rasterVis)
+  library(RColorBrewer)
+  library(spatstat)
+  library(plyr)
+```
+
+# Loading the data
+
+I am using the first Barro Colorado census.
+
+```{r, fig.width=12, fig.height=8}
+  bci <- read.table("PlotDataReport12-09-2015_1179045564.txt", header=T, sep="\t")
+  # removing the NAs
+  bci <- bci[is.na(bci$PX)==FALSE,]
+  bci <- bci[, c("Latin","PX","PY")]
+```
+
+
+# The plot 
+
+```{r, fig.width=10, fig.height=10}
+    my.green <- col2rgb(brewer.pal(9, "Greens")[8])
+    my.green <- rgb(my.green[1]/256, my.green[2]/256, my.green[3]/256, alpha=0.1)
+    
+    par(oma=c(0,0,0,0))
+    plot(c(0,2000),c(0, 2000), type="n", axes=FALSE, xlab="x [m]", ylab="y [m]")
+    axis(1); axis(2)
+    points(bci$PX, bci$PY, cex=0.1, col=my.green) 
+    rect(0,0,2000,2000)
+```
+
+# Function fitting the Thomas process model
+
+The function returns parameters that can be used in the `rThomas` function.
+
+```{r}
+  Thomas <- function(x, y)
+  {
+    if(length(x)==1) # in case there is just a single point
+    {
+      return(c(kappa=1/(1000*500), sigma=1, mu=1))  
+    }
+    
+    else
+    {
+      W <- as.owin(list(xrange=c(0,1000), yrange=c(0,500)))
+      xy <- as.ppp(cbind(x, y), W)
+      fit.xy <- clusterfit(xy, clusters="Thomas")
+      return(fit.xy$modelpar)
+    }
+  }
+```
+
+Test the function
+
+```{r, fig.width=10, fig.height=10}
+  test.sp <- bci[bci$Latin=="Acalypha diversifolia",]
+  #test.sp <- bci[bci$Latin=="Ormosia amazonica",]
+  #test.sp <- bci[bci$Latin=="Bactris major",]
+  #test.sp <- bci[bci$Latin=="Ficus popenoei",]
+  #test.sp <- bci[bci$Latin=="Hybanthus prunifolius",]
+  
+  test.fit <- Thomas(test.sp$PX, test.sp$PY)
+  
+  W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
+  
+  test.pred <- rThomas(test.fit['kappa'], 
+                       test.fit['sigma'], 
+                       test.fit['mu'], 
+                       win=W2000)
+
+  plot(test.pred, pch=19, cex=0.3, cols="black", main="Test species")
+  rect(0,0,1000,500, col="white")
+  points(test.sp$PX, test.sp$PY, col="red", pch=19, cex=0.3)
+```
+
+Fitting it to all the data
+
+```{r}
+  abund <- ddply(.data=bci,
+                 .variables="Latin",
+                 .fun=summarize,
+                  Abundance=length(Latin))
+```
+
+```{r}
+  Thomas.res <- list()
+  for(i in 1:nrow(abund))
+  {
+    spec <- as.character(abund[i, 'Latin'])
+    bci.sub <- bci[bci$Latin==spec,]
+    Thomas.res[[i]] <- c(Thomas(bci.sub$PX, bci.sub$PY))
+  }  
+  Thomas.res <- ldply(Thomas.res)
+  Thomas.res <- data.frame(abund, Thomas.res)
+```
+
+```{r, fig.width=10, fig.height=10}
+  par(mfrow=c(2,2), mai=c(0.8, 0.8, 0.1, 0.1))
+  hist(log10(Thomas.res$Abundance), col="grey", main="", 
+       xlab="log10 Abundance", breaks=30)
+  hist(log10(Thomas.res$kappa), col="grey", main="", 
+       xlab="log10 kappa", breaks=30)
+  hist(log10(Thomas.res$sigma), col="grey", main="", 
+       xlab="log10 sigma", breaks=30)
+  hist(log10(Thomas.res$mu), col="grey", main="", 
+       xlab="log10 mu", breaks=30)
+  pairs(log10(Thomas.res[,2:5]))
+```
+
+# SAD of the extrapolated community
+
+```{r}
+
+```
+
+# Exact versions of R and its packages used 
+
+```{r}
+  sessionInfo()
+```
+
+
+
