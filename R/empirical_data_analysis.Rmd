@@ -8,15 +8,6 @@ output:
     theme: cerulean
 ---
 
-Here I calculate distribution of range sizes in the BCI plot, and also various
-cell-specific summaries of range sizes of species that are present in the cell.
-
-The whole thing is done for David Storch's project on critical role of domain
-boundaries in shaping range size distributions and spatial patterns of range 
-sizes.
-
-Note: **By `range size` I mean number of occupied grid cells in the CTFS plot.**
-
 # Loading the necessary R libraries
 
 ```{r, message=FALSE}
