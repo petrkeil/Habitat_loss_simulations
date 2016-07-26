@@ -1,0 +1,73 @@
+---
+title: "Simulating complex spatial arrangemets of habitat loss"
+author: "Petr Keil"
+output: 
+  html_document: 
+    highlight: tango
+    theme: cerulean
+---
+
+```{r, message=FALSE}
+  library(raster)
+  library(sp)
+  library(maptools)
+  library(rasterVis)
+  library(spatstat)
+  library(plyr)
+```
+
+# Simple branching pattern
+
+```{r}
+  # The exponent
+  Lambda <- 20
+  
+  # Lay down the longest lines
+  main.lines <- psp(runif(3),runif(3),runif(3),runif(3), window=owin())
+  #main.lines <- psp(0,0.5,1,0.5, window=owin())
+  
+  # Sample points proportionally to the distance to the lines
+  dist.from.line <- distmap(main.lines)
+    # exponential transformation of the distance
+    dist.from.line.exp <- Lambda*exp(-Lambda*dist.from.line)
+
+  samp.pois <- rpoispp(dist.from.line.exp*10)
+
+  # Project to the lines using project2segment(b, a)
+  Xproj <- project2segment(samp.pois, main.lines)$Xproj
+  sub.lines <- psp(samp.pois$x, samp.pois$y, Xproj$x, Xproj$y, window=owin())
+  
+  # Connect with the lines
+  all.lines <- append.psp(main.lines, sub.lines)
+  dist.from.all.lines <- distmap(all.lines)
+  
+  # Distance from the all-line pattern
+  dist.from.all.lines.exp <- Lambda*exp(-Lambda*dist.from.all.lines)/Lambda
+  plot(dist.from.all.lines.exp, col=terrain.colors(100))
+  contour(dist.from.all.lines.exp, add=TRUE)
+
+  # Convert to raster
+  x <- raster(dist.from.all.lines.exp)
+  x[x>0.8] <- 1 
+  x[x<=0.8] <- 0
+  plot(x)
+```
+
+# Branching pattern with 
+
+```{r}
+  dist.from.points <- distmap(samp.pois)
+  dist.from.points.exp <- Lambda*exp(-Lambda*dist.from.points)/Lambda
+  plot(dist.from.points.exp)
+  
+  xp <- raster(dist.from.points.exp)
+  xp[xp>0.5] <- 1 
+  xp[xp<=0.5] <- 0
+  xp <- xp + x
+  xp[xp>0.8] <- 1
+
+  plot(xp)
+```
+
+
+

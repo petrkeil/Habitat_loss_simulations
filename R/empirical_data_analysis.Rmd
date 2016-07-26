@@ -1,7 +1,6 @@
 ---
 title: "Extrapolating BCI species distributions using Thomas point pattern"
 author: "Petr Keil"
-date: "December 9, 2015"
 output: 
   html_document: 
     highlight: tango
