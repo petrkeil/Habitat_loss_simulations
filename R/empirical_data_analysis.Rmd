@@ -18,6 +18,7 @@ output:
   library(RColorBrewer)
   library(spatstat)
   library(plyr)
+  library(vegan)
 ```
 
 # Loading the data
@@ -117,26 +118,60 @@ as a data frame:
   Thomas.res <- data.frame(abund, Thomas.res)
 ```
 
-Plot histograms of the fitted Thomas model parameters:
+Calculate SAD of the extrapolated 2x2 km community:
+
+```{r}
+  abund.ext <- numeric()
+  for(i in 1:nrow(abund))
+  {
+    spec <- as.character(abund[i, 'Latin'])
+    spec.2km <- rThomas(kappa=Thomas.res[i, 'kappa'], 
+                        scale=Thomas.res[i, 'sigma'], 
+                        mu=Thomas.res[i, 'mu'], 
+                        win=W2000)
+    abund.ext[i] <- spec.2km$n
+  }  
+
+  Thomas.res <- data.frame(Thomas.res, Abundance.ext=abund.ext)
+```
+
+Export the results to `.csv` file:
+
+```{r}
+  write.csv(Thomas.res, file="BCI_Thomas.csv", row.names = FALSE)
+```
+
+Plot abundance distributions:
 
 ```{r, fig.width=10, fig.height=10}
   par(mfrow=c(2,2), mai=c(0.8, 0.8, 0.1, 0.1))
   hist(log10(Thomas.res$Abundance), col="grey", main="", 
-       xlab="log10 Abundance", breaks=30)
+       xlab="log10 Abundance (500 x 1000)", breaks=30)
+  hist(log10(Thomas.res$Abundance.ext), col="grey", main="", 
+       xlab="log10 Abundance (2000 x 2000)", breaks=30)
+  plot(sort(log10(Thomas.res$Abundance), decreasing=TRUE), 
+       ylab="Log10 Abundance (500 x 1000)")
+    plot(sort(log10(Thomas.res$Abundance.ext), decreasing=TRUE), 
+       ylab="Log10 Abundance (2000 x 2000)")
+```
+
+Plot histograms of the fitted Thomas model parameters:
+
+```{r, fig.width=10, fig.height=10}
+  par(mfrow=c(2,2), mai=c(0.8, 0.8, 0.1, 0.1))
   hist(log10(Thomas.res$kappa), col="grey", main="", 
        xlab="log10 kappa", breaks=30)
   hist(log10(Thomas.res$sigma), col="grey", main="", 
        xlab="log10 sigma", breaks=30)
   hist(log10(Thomas.res$mu), col="grey", main="", 
        xlab="log10 mu", breaks=30)
-  pairs(log10(Thomas.res[,2:5]))
 ```
-
-# Calculate SAD of the extrapolated 2x2 km community:
 
 ```{r}
-
+  pairs(log10(Thomas.res[,2:6]))
 ```
+
+
 
 # Exact versions of R and its packages used 
 
