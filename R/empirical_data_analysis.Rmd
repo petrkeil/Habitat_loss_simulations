@@ -34,7 +34,7 @@ Note: **By `range size` I mean number of occupied grid cells in the CTFS plot.**
 I am using the first Barro Colorado census.
 
 ```{r, fig.width=12, fig.height=8}
-  bci <- read.table("PlotDataReport12-09-2015_1179045564.txt", header=T, sep="\t")
+  bci <- read.table("../data/PlotDataReport12-09-2015_1179045564.txt", header=T, sep="\t")
   # removing the NAs
   bci <- bci[is.na(bci$PX)==FALSE,]
   bci <- bci[, c("Latin","PX","PY")]
