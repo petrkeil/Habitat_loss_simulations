@@ -71,27 +71,37 @@ The function returns parameters that can be used in the `rThomas` function.
   }
 ```
 
-Test the function
+Function that fits, extrapolates and plots the Thomas model for a specific species:
 
-```{r, fig.width=10, fig.height=10}
-  test.sp <- bci[bci$Latin=="Acalypha diversifolia",]
-  #test.sp <- bci[bci$Latin=="Ormosia amazonica",]
-  #test.sp <- bci[bci$Latin=="Bactris major",]
-  #test.sp <- bci[bci$Latin=="Ficus popenoei",]
-  #test.sp <- bci[bci$Latin=="Hybanthus prunifolius",]
-  
-  test.fit <- Thomas(test.sp$PX, test.sp$PY)
-  
-  W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
-  
-  test.pred <- rThomas(test.fit['kappa'], 
-                       test.fit['sigma'], 
-                       test.fit['mu'], 
+```{r}
+  Thomas.plot <- function(spec.name, bci)
+  {
+    sp <- bci[bci$Latin==spec.name,]
+    sp.fit <- Thomas(sp$PX, sp$PY)
+    W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
+      
+    sp.pred <- rThomas(sp.fit['kappa'], 
+                       sp.fit['sigma'], 
+                       sp.fit['mu'], 
                        win=W2000)
+    
+    plot(sp.pred, pch=19, cex=0.3, cols="black", main=spec.name)
+    rect(0,0,1000,500, col="white")
+    points(sp$PX, sp$PY, col="red", pch=19, cex=0.3)
+  }
+```
 
-  plot(test.pred, pch=19, cex=0.3, cols="black", main="Test species")
-  rect(0,0,1000,500, col="white")
-  points(test.sp$PX, test.sp$PY, col="red", pch=19, cex=0.3)
+Example species
+
+```{r, fig.width=10, fig.height=15}
+par(mfrow=c(3,2), mai=c(0.1,0.1, 0.5, 0.5))
+  Thomas.plot("Hybanthus prunifolius", bci)
+  Thomas.plot("Acalypha diversifolia", bci)
+  Thomas.plot("Bactris major", bci)
+  Thomas.plot("Triplaris cumingiana", bci)
+  Thomas.plot("Ficus popenoei", bci)
+  Thomas.plot("Ormosia amazonica", bci)
+  
 ```
 
 Get species-abundance distribution of the original BCI plot:
@@ -106,7 +116,7 @@ Get species-abundance distribution of the original BCI plot:
 Fit the Thomas model to all species in the BCI plot, and export the results
 as a data frame:
 
-```{r}
+```{r, warning=FALSE}
   Thomas.res <- list()
   for(i in 1:nrow(abund))
   {
@@ -121,7 +131,10 @@ as a data frame:
 Calculate SAD of the extrapolated 2x2 km community:
 
 ```{r}
-  abund.ext <- numeric()
+  # define the 2x2 km window 
+  W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
+  abund.ext <- numeric() # empty container for the results
+
   for(i in 1:nrow(abund))
   {
     spec <- as.character(abund[i, 'Latin'])
