@@ -67,6 +67,7 @@ output:
   xp[xp>0.8] <- 1
 
   plot(xp)
+  plot(10)
 ```
 
 
