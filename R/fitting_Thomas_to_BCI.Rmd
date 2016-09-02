@@ -1,5 +1,5 @@
 ---
-title: "Extrapolating BCI species distributions using Thomas point pattern"
+title: "Fitting Thomas model to BCI data, and extrapolating it to 2x2 km"
 author: "Petr Keil"
 output: 
   html_document: 
@@ -12,12 +12,10 @@ output:
 ```{r, message=FALSE}
   library(raster)
   library(sp)
-  library(maptools)
-  library(rasterVis)
-  library(RColorBrewer)
   library(spatstat)
   library(plyr)
   library(vegan)
+  library(RColorBrewer)
 ```
 
 # Loading the data
@@ -30,7 +28,6 @@ I am using the first BCI census.
   bci <- bci[is.na(bci$PX)==FALSE,]
   bci <- bci[, c("Latin","PX","PY")]
 ```
-
 
 # The BCI plot
 
@@ -90,20 +87,19 @@ Function that fits, extrapolates and plots the Thomas model for a specific speci
   }
 ```
 
-Example species
+Example species:
 
 ```{r, fig.width=10, fig.height=15}
-par(mfrow=c(3,2), mai=c(0.1,0.1, 0.5, 0.5))
+  par(mfrow=c(3,2), mai=c(0.1,0.1, 0.5, 0.5))
   Thomas.plot("Hybanthus prunifolius", bci)
   Thomas.plot("Acalypha diversifolia", bci)
   Thomas.plot("Bactris major", bci)
   Thomas.plot("Triplaris cumingiana", bci)
   Thomas.plot("Ficus popenoei", bci)
   Thomas.plot("Ormosia amazonica", bci)
-  
 ```
 
-Get species-abundance distribution of the original BCI plot:
+## Get SAD of the original BCI plot:
 
 ```{r}
   abund <- ddply(.data=bci,
@@ -111,6 +107,8 @@ Get species-abundance distribution of the original BCI plot:
                  .fun=summarize,
                   Abundance=length(Latin))
 ```
+
+## Fit the Thomas model for each species
 
 Fit the Thomas model to all species in the BCI plot, and export the results
 as a data frame:
@@ -127,7 +125,7 @@ as a data frame:
   Thomas.res <- data.frame(abund, Thomas.res)
 ```
 
-Calculate SAD of the extrapolated 2x2 km community:
+## Calculate SAD of the extrapolated 2x2 km community:
 
 ```{r}
   # define the 2x2 km window 
@@ -147,13 +145,13 @@ Calculate SAD of the extrapolated 2x2 km community:
   Thomas.res <- data.frame(Thomas.res, Abundance.ext=abund.ext)
 ```
 
-Export the results to `.csv` file:
+## Export the results to `.csv` file:
 
 ```{r}
-  write.csv(Thomas.res, file="BCI_Thomas.csv", row.names = FALSE)
+  write.csv(Thomas.res, file="../data/BCI_Thomas.csv", row.names = FALSE)
 ```
 
-Plot abundance distributions:
+## Plot abundance distributions:
 
 ```{r, fig.width=10, fig.height=10}
   par(mfrow=c(2,2), mai=c(0.8, 0.8, 0.1, 0.1))
@@ -167,7 +165,7 @@ Plot abundance distributions:
        ylab="Log10 Abundance (2000 x 2000)")
 ```
 
-Plot histograms of the fitted Thomas model parameters:
+## Plot histograms of the fitted Thomas model parameters:
 
 ```{r, fig.width=10, fig.height=10}
   par(mfrow=c(2,2), mai=c(0.8, 0.8, 0.1, 0.1))

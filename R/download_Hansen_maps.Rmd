@@ -1,0 +1,27 @@
+---
+title: "Hansen's data download"
+author: "Petr Keil"
+date: "July 22, 2016"
+output: html_document
+---
+
+```{r}
+  library(raster)
+```
+
+# Load Hansen's loss data
+
+http://earthenginepartners.appspot.com/science-2013-global-forest/download_v1.2.html
+
+```{r}
+  download.file("https://storage.googleapis.com/earthenginepartners-hansen/GFC2015/Hansen_GFC2015_loss_00N_060W.tif", "loss.tiff")
+  loss <- raster("loss.tiff")
+  loss2 <- aggregate(loss, fact=10, fun=sum)
+  loss3 <- aggregate(loss, fact=100, fun=sum)
+  plot(loss3)
+```
+
+
+
+
+
