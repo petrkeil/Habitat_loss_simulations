@@ -25,14 +25,16 @@ Load the Thomas model parameters
 ## Simulate point patterns with marked species identity
 
 ```{r}
-  simcom.list <- system.time(sim.Thomas.com(Thomas.res))
-  big.ppp <- system.time(merge.simcom.list(simcom.list))
+  simcom.list <- sim.Thomas.com(Thomas.res, 1:100)
+  big.ppp <- merge.simcom.list(simcom.list)
 ```
 
 ## Load the desctruction patterns
 ```{r}
   branching.loss <- read.loss.owin("../data/loss_matrices/branching.csv")
   branching.rem <- read.remain.owin("../data/loss_matrices/branching.csv")
+  outwards.loss <- read.loss.owin("../data/loss_matrices/outwards.csv")
+  outwards.rem <- read.remain.owin("../data/loss_matrices/outwards.csv")
 ```
 
 ## Count number of species in the lsot area, in the remaining are, and the total
@@ -41,10 +43,10 @@ Load the Thomas model parameters
   # Total number of species
   length(unique(big.ppp$marks))
 
-  loss.ppp <- big.ppp[branching.loss]
+  loss.ppp <- big.ppp[outwards.loss]
   length(unique(loss.ppp$marks)) 
 
-  rem.ppp <- big.ppp[branching.rem]
+  rem.ppp <- big.ppp[outwards.rem]
   length(unique(rem.ppp$marks)) 
 
 ```
