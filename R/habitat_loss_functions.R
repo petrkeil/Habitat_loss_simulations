@@ -1,6 +1,6 @@
 
 require(spatstat)
-
+require(plyr)
 
 # ------------------------------------------------------------------------------
 # FUNCTION FITTING THE THOMAS MODEL TO XY POINT DATA
@@ -23,6 +23,60 @@ require(spatstat)
       return(fit.xy$modelpar)
     }
   }
+
+# ------------------------------------------------------------------------------
+# FUNCTION SIMULATING THE THOMAS PATTERN FOR A SET OF SPECIES
+
+# Arguments:
+# param.data - data.frame with columns: "Latin", "kappa", "sigma" and "mu"
+# indcs - indices of the rows in the param.data that shuld be included
+  
+  sim.Thomas.com <- function(param.data, indcs = 1:nrow(param.data))
+  {
+    simcom.list <- list() # empty list to store the species
+    W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000))) # bounding window
+    
+    for(i in indcs)
+    {
+      sp.name <- as.character(param.data[i, "Latin"])
+      print(sp.name)
+      # drawing from the Thomas model using the empirical parameters
+      sp.pred <- rThomas(kappa = param.data[i, "kappa"], 
+                         scale = param.data[i, "sigma"], 
+                         mu = param.data[i, "mu"], 
+                         win = W2000)
+      sp.pred.data <- data.frame(x = sp.pred$x, 
+                                 y = sp.pred$y,
+                                 marks = rep(sp.name, times=npoints(sp.pred)))
+      simcom.list[[i]] <- sp.pred.data
+      names(simcom.list)[i] <- sp.name
+    }
+    
+    return(simcom.list)
+  }
+  
+  # Example:
+   a <- sim.Thomas.com(Thomas.res, 1:4)
+
+
+# ------------------------------------------------------------------------------
+# FUNCTION CONVERTING THE PRODUCED LIST TO A ONE BIG MULTISPECIES ppp OBJECT
+   
+  merge.simcom.list <- function(simcom.list)
+  {
+    simcom.data <- ldply(simcom.list)
+    
+    W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000))) # bounding window
+ 
+    ppp.multisp <- ppp(x = simcom.data$x, 
+                       y = simcom.data$y, 
+                       marks = simcom.data$marks,
+                       window = W2000)
+    return(ppp.multisp)
+  }
+  
+  # Example:
+  big.ppp <- merge.simcom.list(a)
   
 # ------------------------------------------------------------------------------
 # FIT AND EXTRAPOLATE THE THOMAS MODEL  
