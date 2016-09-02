@@ -1,0 +1,40 @@
+---
+title: "Simulating whole tree community in 2x2 km window"
+author: "Petr Keil"
+date: "September 2, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the libraries and source the functions
+
+```{r}
+  library(spatstat)
+  source("habitat_loss_functions.R")
+```
+
+Load the Thomas model parameters
+
+```{r}
+  Thomas.res <- read.csv("../data/BCI_Thomas.csv")
+```
+
+## Simulate point patterns with marked species identity
+
+```{r}
+   W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
+  sp.1 <- rThomas(0.00001, 15, 13, win=W2000)
+  marks(sp.1) <- "sp1"
+  sp.2 <- rThomas(0.0001, 5, 3, win=W2000)
+  marks(sp.2) <- "sp2"
+  
+  sp12 <- superimpose(sp.1, sp.2)
+  plot(sp12)
+  
+  plot(split.ppp(sp12, f=as.factor(marks(sp12))))
+```
+
+

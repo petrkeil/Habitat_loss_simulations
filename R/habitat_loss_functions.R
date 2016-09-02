@@ -101,6 +101,7 @@ require(spatstat)
  # a <- read.remain.owin("../data/loss_matrices/branching3.csv")
  # W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
  # sp.pred <- rThomas(0.0001, 15, 13, win=W2000)
+ # plot(sp.pred[a])
 
  
  
