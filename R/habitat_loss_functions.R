@@ -39,7 +39,7 @@ require(plyr)
     for(i in indcs)
     {
       sp.name <- as.character(param.data[i, "Latin"])
-      print(sp.name)
+      # print(sp.name)
       # drawing from the Thomas model using the empirical parameters
       sp.pred <- rThomas(kappa = param.data[i, "kappa"], 
                          scale = param.data[i, "sigma"], 

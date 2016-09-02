@@ -16,7 +16,19 @@ Load the libraries and source the functions
   source("habitat_loss_functions.R")
 ```
 
-Load the Thomas model parameters
+## Plot the scenarios
+
+```{r}
+  par(mfrow=c(3,3), mai=c(0.1,0.1,0.1,0.1))
+  for(scenario in list.files("../data/loss_matrices/"))
+  {
+    print(scenario)
+    M <- read.loss.owin(paste("../data/loss_matrices/", scenario, sep=""))
+    plot(M, main=scenario)
+  }
+```
+
+## Load the Thomas model parameters
 
 ```{r}
   Thomas.res <- read.csv("../data/BCI_Thomas.csv")
@@ -25,21 +37,16 @@ Load the Thomas model parameters
 ## Simulate point patterns with marked species identity
 
 ```{r}
-  simcom.list <- sim.Thomas.com(Thomas.res, 1:100)
+  simcom.list <- sim.Thomas.com(Thomas.res, 1:10)
   big.ppp <- merge.simcom.list(simcom.list)
-```
-
-## Load the desctruction patterns
-```{r}
-  branching.loss <- read.loss.owin("../data/loss_matrices/branching.csv")
-  branching.rem <- read.remain.owin("../data/loss_matrices/branching.csv")
-  outwards.loss <- read.loss.owin("../data/loss_matrices/outwards.csv")
-  outwards.rem <- read.remain.owin("../data/loss_matrices/outwards.csv")
 ```
 
 ## Count number of species in the lsot area, in the remaining are, and the total
 
 ```{r}
+  outwards.loss <- read.loss.owin("../data/loss_matrices/outwards.csv")
+  outwards.rem <- read.remain.owin("../data/loss_matrices/outwards.csv")
+
   # Total number of species
   length(unique(big.ppp$marks))
 
@@ -50,6 +57,58 @@ Load the Thomas model parameters
   length(unique(rem.ppp$marks)) 
 
 ```
+
+## The simulation and habitat destruction procedure procedure
+
+```{r}
+  results <- list()
+  N.sims <- 10
+
+  Sim_ID <- 1
+  for(j in 1:N.sims)
+  {
+    for(file in list.files("../data/loss_matrices/"))
+    {
+      loss <- read.loss.owin(paste("../data/loss_matrices/", scenario, sep=""))
+      rem <- read.remain.owin(paste("../data/loss_matrices/", scenario, sep=""))
+      
+      loss.ppp <- big.ppp[loss]  
+      rem.ppp <- big.ppp[rem]  
+      
+      S.loss <- length(unique(loss.ppp$marks)) 
+      S.rem <- length(unique(rem.ppp$marks)) 
+      S.tot <- length(unique(big.ppp$marks))
+      
+      one.sim <- data.frame(Sim_ID = Sim_ID,
+                            Scenario = gsub(".csv", "", file), 
+                            S.loss = S.loss, 
+                            S.rem = S.rem, 
+                            S.tot = S.tot)
+      results[[Sim_ID]] <- one.sim
+      
+      print(file)
+      i <- i + 1
+    }
+  }
+  
+  results <- ldply(results)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
