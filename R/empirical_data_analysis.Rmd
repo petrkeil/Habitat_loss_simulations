@@ -183,8 +183,6 @@ Plot histograms of the fitted Thomas model parameters:
   pairs(log10(Thomas.res[,2:6]))
 ```
 
-
-
 # Exact versions of R and its packages used 
 
 ```{r}
