@@ -56,7 +56,7 @@ require(plyr)
   }
   
   # Example:
-   a <- sim.Thomas.com(Thomas.res, 1:4)
+  # a <- sim.Thomas.com(Thomas.res, 1:4)
 
 
 # ------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ require(plyr)
   }
   
   # Example:
-  big.ppp <- merge.simcom.list(a)
+  # big.ppp <- merge.simcom.list(a)
   
 # ------------------------------------------------------------------------------
 # FIT AND EXTRAPOLATE THE THOMAS MODEL  
@@ -132,7 +132,7 @@ require(plyr)
   }
  
  # Example:    
- # a <- read.loss.owin("../data/loss_matrices/branching.csv")
+ #  a <- read.loss.owin("../data/loss_matrices/branching.csv")
  # W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
  # sp.pred <- rThomas(0.00001, 15, 13, win=W2000)
  # plot(sp.pred[a])

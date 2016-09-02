@@ -25,16 +25,34 @@ Load the Thomas model parameters
 ## Simulate point patterns with marked species identity
 
 ```{r}
-   W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
-  sp.1 <- rThomas(0.00001, 15, 13, win=W2000)
-  marks(sp.1) <- "sp1"
-  sp.2 <- rThomas(0.0001, 5, 3, win=W2000)
-  marks(sp.2) <- "sp2"
-  
-  sp12 <- superimpose(sp.1, sp.2)
-  plot(sp12)
-  
-  plot(split.ppp(sp12, f=as.factor(marks(sp12))))
+  simcom.list <- system.time(sim.Thomas.com(Thomas.res))
+  big.ppp <- system.time(merge.simcom.list(simcom.list))
 ```
+
+## Load the desctruction patterns
+```{r}
+  branching.loss <- read.loss.owin("../data/loss_matrices/branching.csv")
+  branching.rem <- read.remain.owin("../data/loss_matrices/branching.csv")
+```
+
+## Count number of species in the lsot area, in the remaining are, and the total
+
+```{r}
+  # Total number of species
+  length(unique(big.ppp$marks))
+
+  loss.ppp <- big.ppp[branching.loss]
+  length(unique(loss.ppp$marks)) 
+
+  rem.ppp <- big.ppp[branching.rem]
+  length(unique(rem.ppp$marks)) 
+
+```
+
+
+
+
+
+
 
 
