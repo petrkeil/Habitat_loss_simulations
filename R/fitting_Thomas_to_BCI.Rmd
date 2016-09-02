@@ -1,5 +1,5 @@
 ---
-title: "Fitting Thomas model to BCI data, and extrapolating it to 2x2 km"
+title: "Fitting Thomas model to BCI data, and illustrating the extrapolation to 2x2 km"
 author: "Petr Keil"
 output: 
   html_document: 
@@ -16,6 +16,7 @@ output:
   library(plyr)
   library(vegan)
   library(RColorBrewer)
+  source("habitat_loss_functions.R")
 ```
 
 # Loading the data
@@ -43,48 +44,6 @@ for extrapolation of species distributions.
     axis(1); axis(2)
     points(bci$PX, bci$PY, cex=0.1, col=my.green) 
     rect(0,0,2000,2000)
-```
-
-# Function fitting the Thomas process model
-
-The function returns parameters that can be used in the `rThomas` function.
-
-```{r}
-  Thomas <- function(x, y) # x and y coordinates of the points
-  {
-    if(length(x)==1) # in case there is just a single point
-    {
-      return(c(kappa=1/(1000*500), sigma=1, mu=1))  
-    }
-    
-    else # fit the Thomas model and return the parameters
-    {
-      W <- as.owin(list(xrange=c(0,1000), yrange=c(0,500)))
-      xy <- as.ppp(cbind(x, y), W)
-      fit.xy <- clusterfit(xy, clusters="Thomas")
-      return(fit.xy$modelpar)
-    }
-  }
-```
-
-Function that fits, extrapolates and plots the Thomas model for a specific species:
-
-```{r}
-  Thomas.plot <- function(spec.name, bci)
-  {
-    sp <- bci[bci$Latin==spec.name,]
-    sp.fit <- Thomas(sp$PX, sp$PY)
-    W2000 <- as.owin(list(xrange=c(0,2000), yrange=c(0,2000)))
-      
-    sp.pred <- rThomas(sp.fit['kappa'], 
-                       sp.fit['sigma'], 
-                       sp.fit['mu'], 
-                       win=W2000)
-    
-    plot(sp.pred, pch=19, cex=0.3, cols="black", main=spec.name)
-    rect(0,0,1000,500, col="white")
-    points(sp$PX, sp$PY, col="red", pch=19, cex=0.3)
-  }
 ```
 
 Example species:
@@ -125,7 +84,7 @@ as a data frame:
   Thomas.res <- data.frame(abund, Thomas.res)
 ```
 
-## Calculate SAD of the extrapolated 2x2 km community:
+## Calculate SAD of the extrapolated 2x2 km community
 
 ```{r}
   # define the 2x2 km window 
@@ -145,13 +104,13 @@ as a data frame:
   Thomas.res <- data.frame(Thomas.res, Abundance.ext=abund.ext)
 ```
 
-## Export the results to `.csv` file:
+## Export the results to `.csv` file
 
 ```{r}
   write.csv(Thomas.res, file="../data/BCI_Thomas.csv", row.names = FALSE)
 ```
 
-## Plot abundance distributions:
+## Plot abundance distributions
 
 ```{r, fig.width=10, fig.height=10}
   par(mfrow=c(2,2), mai=c(0.8, 0.8, 0.1, 0.1))
@@ -165,7 +124,7 @@ as a data frame:
        ylab="Log10 Abundance (2000 x 2000)")
 ```
 
-## Plot histograms of the fitted Thomas model parameters:
+## Plot histograms of the fitted Thomas model parameters
 
 ```{r, fig.width=10, fig.height=10}
   par(mfrow=c(2,2), mai=c(0.8, 0.8, 0.1, 0.1))
